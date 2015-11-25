@@ -1,0 +1,10 @@
+[package]
+name = "telegram-groups-bot"
+version = "0.1.0"
+authors = [
+  "Danilo Bargen <mail@dbrgn.ch>"
+]
+
+[dependencies]
+telegram-bot = "^0.3"
+log = "^0.3"
