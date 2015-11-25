@@ -1,7 +1,13 @@
 extern crate telegram_bot;
+extern crate conv;
 #[macro_use] extern crate log;
 
+mod errors;
+
 use telegram_bot::{Api, ListeningMethod, MessageType, ListeningAction};
+use conv::TryFrom;
+
+use errors::CommandParseError;
 
 
 #[derive(Debug)]
@@ -12,21 +18,28 @@ struct Command {
 
 
 /// Parse a text message, return a command if possible
-/// TODO: Do this via a From<&str> implementation
-fn parse_msg(text: String) -> Option<Command> {
-    if !text.starts_with("/") {
-        return None;
-    }
+impl<'a> TryFrom<&'a str> for Command {
+    type Err = CommandParseError;
+    fn try_from(text: &'a str) -> Result<Self, CommandParseError> {
 
-    let mut words = text.split(' ');
-    if let Some(name) = words.next() {
-        let params: Vec<String> = words.map(|s| s.into()).collect();
-        Some(Command {
-            name: name.into(),
-            params: params,
-        })
-    } else {
-        None
+        // Verify if this is actually a command
+        if !text.starts_with("/") {
+            return Err(CommandParseError::NoCommand);
+        }
+
+        // Split text into words iterator
+        let mut words = text.split(' ');
+
+        // Parse out name and params
+        if let Some(name) = words.next() {
+            let params: Vec<String> = words.map(|s| s.into()).collect();
+            Ok(Command {
+                name: name.into(),
+                params: params,
+            })
+        } else {
+            Err(CommandParseError::NoCommand)
+        }
     }
 }
 
@@ -45,10 +58,10 @@ fn main() {
 
             if let MessageType::Text(text) = m.msg {
 
-                let command = parse_msg(text);
+                let command = Command::try_from(&*text);
                 match command {
-                    Some(cmd) => println!("Command: {:?}", cmd),
-                    None => println!("No command."),
+                    Ok(cmd) => println!("Command: {:?}", cmd),
+                    Err(_) => println!("No command."),
                 }
 
             } else {
