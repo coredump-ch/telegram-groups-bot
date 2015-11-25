@@ -27,7 +27,7 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
         if let Some(name) = words.next() {
             let params: Vec<String> = words.map(|s| s.into()).collect();
             Ok(Command {
-                name: name.into(),
+                name: name[1..].into(),
                 params: params,
             })
         } else {
