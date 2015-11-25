@@ -5,11 +5,13 @@ extern crate env_logger;
 
 mod types;
 mod errors;
+mod commands;
 
 use telegram_bot::{Api, ListeningMethod, MessageType, ListeningAction};
 use conv::TryFrom;
 
 use types::Command;
+use commands::CommandHandler;
 
 
 fn main() {
@@ -31,8 +33,12 @@ fn main() {
 
                 let command = Command::try_from(&*text);
                 match command {
-                    Ok(cmd) => println!("Command: {:?}", cmd),
-                    Err(_) => println!("No command."),
+                    Ok(cmd) => {
+                        debug!("Command: {:?}", cmd);
+                        let handler = commands::LogHandler { command: cmd.clone() };
+                        handler.handle();
+                    }
+                    Err(_) => debug!("No command."),
                 }
 
             } else {

@@ -3,7 +3,7 @@
 use errors::CommandParseError;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Command {
     pub name: String,
     pub params: Vec<String>,

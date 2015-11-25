@@ -1,3 +1,5 @@
+//! Errors used in this bot implementation.
+
 use std::error;
 use std::fmt;
 
