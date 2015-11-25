@@ -2,46 +2,13 @@ extern crate telegram_bot;
 extern crate conv;
 #[macro_use] extern crate log;
 
+mod types;
 mod errors;
 
 use telegram_bot::{Api, ListeningMethod, MessageType, ListeningAction};
 use conv::TryFrom;
 
-use errors::CommandParseError;
-
-
-#[derive(Debug)]
-struct Command {
-    pub name: String,
-    pub params: Vec<String>,
-}
-
-
-/// Parse a text message, return a command if possible
-impl<'a> TryFrom<&'a str> for Command {
-    type Err = CommandParseError;
-    fn try_from(text: &'a str) -> Result<Self, CommandParseError> {
-
-        // Verify if this is actually a command
-        if !text.starts_with("/") {
-            return Err(CommandParseError::NoCommand);
-        }
-
-        // Split text into words iterator
-        let mut words = text.split(' ');
-
-        // Parse out name and params
-        if let Some(name) = words.next() {
-            let params: Vec<String> = words.map(|s| s.into()).collect();
-            Ok(Command {
-                name: name.into(),
-                params: params,
-            })
-        } else {
-            Err(CommandParseError::NoCommand)
-        }
-    }
-}
+use types::Command;
 
 
 fn main() {
