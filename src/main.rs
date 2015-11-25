@@ -1,4 +1,5 @@
 extern crate telegram_bot;
+extern crate threadpool;
 extern crate conv;
 #[macro_use] extern crate log;
 extern crate env_logger;
@@ -8,6 +9,7 @@ mod errors;
 mod commands;
 
 use telegram_bot::{Api, ListeningMethod, MessageType, ListeningAction};
+use threadpool::ThreadPool;
 use conv::TryFrom;
 
 use types::Command;
@@ -25,6 +27,9 @@ fn main() {
     // We want to listen for new updates via LongPoll
     let mut listener = api.listener(ListeningMethod::LongPoll(None));
 
+    // Create thread pool for command handlers
+    let pool = ThreadPool::new(12);
+
     // Fetch new updates via long poll method
     listener.listen(|u| {
         if let Some(m) = u.message {
@@ -36,7 +41,9 @@ fn main() {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
                         let handler = commands::LogHandler { command: cmd.clone() };
-                        handler.handle();
+                        pool.execute(move || {
+                            handler.handle();
+                        });
                     }
                     Err(_) => debug!("No command."),
                 }
