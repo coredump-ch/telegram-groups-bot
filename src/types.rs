@@ -25,12 +25,25 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
         let mut words = text.split(' ');
 
         // Parse out name and params
-        if let Some(name) = words.next() {
+        if let Some(command) = words.next() {
+
+            // Strip leading slash
+            let name: String = command[1..].into();
+
+            // If name is an empty string, it's not valid
+            if name.len() == 0 {
+                return Err(CommandParseError::NoCommand);
+            }
+
+            // Parse parameters
             let params: Vec<String> = words.map(|s| s.into()).collect();
+
+            // Return command
             Ok(Command {
-                name: name[1..].into(),
+                name: name.into(),
                 params: params,
             })
+
         } else {
             Err(CommandParseError::NoCommand)
         }
@@ -41,4 +54,41 @@ impl fmt::Display for Command {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "/{} {}", self.name, self.params.join(" "))
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::Command;
+    use conv::TryFrom;
+
+    #[test]
+    fn command_parse_str_ok() {
+        let text_simple: String = "/help".into();
+        let text_params = "/list all";
+
+        let command_simple = Command::try_from(&*text_simple).unwrap();
+        let command_params = Command::try_from(text_params).unwrap();
+
+        assert_eq!(command_simple.name, "help");
+        assert_eq!(command_simple.params, Vec::<String>::new());
+        assert_eq!(command_params.name, "list");
+        assert_eq!(command_params.params, vec!["all"]);
+    }
+
+    #[test]
+    fn command_parse_string_err() {
+        let texts = vec![
+            "",
+            "/",
+            "no initial slash",
+            " /preceding space",
+            "/ params but no name",
+        ];
+
+        for &text in texts.iter() {
+            assert!(Command::try_from(text).is_err());
+        }
+    }
+
 }
