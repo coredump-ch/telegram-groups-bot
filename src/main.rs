@@ -1,6 +1,7 @@
 extern crate telegram_bot;
 extern crate conv;
 #[macro_use] extern crate log;
+extern crate env_logger;
 
 mod types;
 mod errors;
@@ -12,6 +13,9 @@ use types::Command;
 
 
 fn main() {
+
+    // Initialize env logger
+    env_logger::init().unwrap();
 
     let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
     println!("getMe: {:?}", api.get_me());
