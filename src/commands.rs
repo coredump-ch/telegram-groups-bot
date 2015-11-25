@@ -16,6 +16,6 @@ pub struct LogHandler {
 
 impl CommandHandler for LogHandler {
     fn handle(&self) {
-        info!("Handled command: {:?}", &self.command);
+        info!("Handled command: {}", &self.command);
     }
 }

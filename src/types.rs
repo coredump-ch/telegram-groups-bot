@@ -1,5 +1,7 @@
 //! Types used in this bot implementation.
 
+use std::fmt;
+
 use errors::CommandParseError;
 
 
@@ -8,7 +10,6 @@ pub struct Command {
     pub name: String,
     pub params: Vec<String>,
 }
-
 
 /// Parse a text message, return a command if possible
 impl<'a> ::conv::TryFrom<&'a str> for Command {
@@ -33,5 +34,11 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
         } else {
             Err(CommandParseError::NoCommand)
         }
+    }
+}
+
+impl fmt::Display for Command {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "/{} {}", self.name, self.params.join(" "))
     }
 }
