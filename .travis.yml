@@ -10,3 +10,5 @@ matrix:
 script:
   - cargo test
   - cargo doc --no-deps
+after_success:
+  - bash scripts/travis-doc-upload.sh

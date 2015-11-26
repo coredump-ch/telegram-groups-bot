@@ -1,12 +1,36 @@
+//! # Telegram Groups Bot
+//!
+//! This bot can be used to manage multiple Telegram topic group chats.
+//! Admins can register topic channels, which the users can then list.
+//! The users can also request the invite link for one of the topic channels.
+//!
+//! ## Command API
+//!
+//! - `/help` Show help
+//! - `/groups` Show list of available topic groups
+//! - `/join <topic>` Show the invite link for that group
+//!
+//! ## Implementation Details
+//!
+//! This bot builds on top of the [telegram-bot][0] crate. It listens to the Telegram API through
+//! LongPoll.
+//!
+//! When a message comes in, it is first parsed into a `Command`. If that worked out, the command
+//! is dispatched to a `CommandHandler`.
+//!
+//! All `CommandHandler`s run in a thread pool, so that they don't block the entire bot.
+//!
+//! [0]: https://crates.io/crates/telegram-bot
+
 extern crate telegram_bot;
 extern crate threadpool;
 extern crate conv;
 #[macro_use] extern crate log;
 extern crate env_logger;
 
-mod types;
-mod errors;
-mod commands;
+pub mod types;
+pub mod errors;
+pub mod commands;
 
 use std::process::exit;
 
