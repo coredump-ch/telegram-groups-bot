@@ -4,14 +4,14 @@ use types::Command;
 
 
 /// A command handler handles commands in a separate thread.
-pub struct CommandHandler<F> where F: Fn(&Command) {
+pub struct CommandHandler {
     command: Command,
-    handler: F,
+    handler: Box<Fn(&Command) + Send + Sync>,
 }
 
-impl<F> CommandHandler<F> where F: Fn(&Command) {
+impl CommandHandler {
 
-    pub fn new(command: Command, handler: F) -> CommandHandler<F> {
+    pub fn new(command: Command, handler: Box<Fn(&Command) + Send + Sync>) -> CommandHandler {
         CommandHandler {
             command: command,
             handler: handler,
@@ -26,4 +26,8 @@ impl<F> CommandHandler<F> where F: Fn(&Command) {
 
 pub fn handle_debug(command: &Command) {
     info!("Handled command: {}", command);
+}
+
+pub fn handle_help(command: &Command) {
+    info!("Handled help: {}", command);
 }

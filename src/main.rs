@@ -87,8 +87,9 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
-                        let handler = match cmd.name {
-                            _ => commands::CommandHandler::new(cmd.clone(), commands::handle_debug),
+                        let handler = match &*cmd.name {
+                            "help" => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_help)),
+                            _ => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_debug)),
                         };
                         pool.execute(move || {
                             handler.handle();
