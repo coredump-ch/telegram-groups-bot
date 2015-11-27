@@ -92,7 +92,8 @@ fn main() {
                             _ => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_debug)),
                         };
                         pool.execute(move || {
-                            handler.handle();
+                            let msg = handler.handle();
+                            info!("Msg was: {:?}", msg);
                         });
                     }
                     Err(_) => debug!("No command."),
