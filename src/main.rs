@@ -87,13 +87,23 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
+
+                        // Build a CommandHandler
                         let handler = match &*cmd.name {
                             "help" => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_help)),
                             _ => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_debug)),
                         };
+
+                        // We need copies of all data that will be moved into the thread context
+                        let chat_id = m.chat.id();
+                        let api_clone = api.clone();
+
+                        // Run the handler in a separate thread
                         pool.execute(move || {
-                            let msg = handler.handle();
-                            info!("Msg was: {:?}", msg);
+                            if let Some(msg) = handler.handle() {
+                                debug!("Msg was: {}", msg);
+                                api_clone.send_message(chat_id, msg, None, None, None);
+                            };
                         });
                     }
                     Err(_) => debug!("No command."),
