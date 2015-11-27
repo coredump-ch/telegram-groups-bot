@@ -3,19 +3,27 @@
 use types::Command;
 
 
-/// A CommandHandler that can be run in a background thread.
-pub trait CommandHandler: Send + Sync {
-    fn handle(&self);
+/// A command handler handles commands in a separate thread.
+pub struct CommandHandler<F> where F: Fn(&Command) {
+    command: Command,
+    handler: F,
 }
 
+impl<F> CommandHandler<F> where F: Fn(&Command) {
 
-/// A simple handler that just logs the command.
-pub struct LogHandler {
-    pub command: Command,
-}
-
-impl CommandHandler for LogHandler {
-    fn handle(&self) {
-        info!("Handled command: {}", &self.command);
+    pub fn new(command: Command, handler: F) -> CommandHandler<F> {
+        CommandHandler {
+            command: command,
+            handler: handler,
+        }
     }
+
+    pub fn handle(&self) {
+        self.handler.call((&self.command,));
+    }
+
+}
+
+pub fn handle_debug(command: &Command) {
+    info!("Handled command: {}", command);
 }

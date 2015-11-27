@@ -22,6 +22,9 @@
 //!
 //! [0]: https://crates.io/crates/telegram-bot
 
+#![feature(core)]
+#![feature(unboxed_closures)]
+
 extern crate telegram_bot;
 extern crate threadpool;
 extern crate conv;
@@ -84,7 +87,9 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
-                        let handler = commands::LogHandler { command: cmd.clone() };
+                        let handler = match cmd.name {
+                            _ => commands::CommandHandler::new(cmd.clone(), commands::handle_debug),
+                        };
                         pool.execute(move || {
                             handler.handle();
                         });
