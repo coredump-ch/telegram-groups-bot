@@ -46,8 +46,7 @@ use commands::CommandHandler;
 
 
 /// Initialize and return a `telegram_bot::Listener` instance.
-fn get_listener() -> Listener {
-    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
+fn get_listener(api: &Api) -> Listener {
     match api.get_me() {
         Ok(user) => println!("Starting {}...", user.first_name),
         Err(e) => {
@@ -68,7 +67,8 @@ fn main() {
     env_logger::init().unwrap();
 
     // Get Telegram Api listener
-    let mut listener = get_listener();
+    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
+    let mut listener = get_listener(&api);
 
     // Create thread pool for command handlers
     let pool = ThreadPool::new(12);
