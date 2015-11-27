@@ -33,5 +33,8 @@ pub fn handle_debug(command: &Command) -> Option<String> {
 
 pub fn handle_help(command: &Command) -> Option<String> {
     info!("Handled help: {}", command);
-    Some("Available commands:\n/help\n/groups\n/join".into())
+    Some("Available commands:\n\n \
+         /help - show this help\n \
+         /groups - list all available groups, along with the invite link"
+         .into())
 }

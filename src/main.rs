@@ -7,8 +7,7 @@
 //! ## Command API
 //!
 //! - `/help` Show help
-//! - `/groups` Show list of available topic groups
-//! - `/join <topic>` Show the invite link for that group
+//! - `/groups` Show list of available topic groups, along with the invite link
 //!
 //! ## Implementation Details
 //!
@@ -79,6 +78,9 @@ fn main() {
         // Dispatch messages
         if let Some(m) = u.message {
 
+            // Get chat id
+            let chat_id = m.chat.id();
+
             // Process text messages
             if let MessageType::Text(text) = m.msg {
 
@@ -94,11 +96,8 @@ fn main() {
                             _ => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_debug)),
                         };
 
-                        // We need copies of all data that will be moved into the thread context
-                        let chat_id = m.chat.id();
-                        let api_clone = api.clone();
-
                         // Run the handler in a separate thread
+                        let api_clone = api.clone();
                         pool.execute(move || {
                             if let Some(msg) = handler.handle() {
                                 debug!("Msg was: {}", msg);
