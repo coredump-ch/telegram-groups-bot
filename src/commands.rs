@@ -3,16 +3,19 @@
 use types::Command;
 
 
+pub type BoxedHandler = Box<Fn(&Command) -> Option<String> + Send + Sync>;
+
+
 /// A command handler handles commands in a separate thread.
 pub struct CommandHandler {
     command: Command,
-    handler: Box<Fn(&Command) -> Option<String> + Send + Sync>,
+    handler: BoxedHandler,
 }
 
 impl CommandHandler {
 
     pub fn new(command: &Command,
-               handler: Box<Fn(&Command) -> Option<String> + Send + Sync>)
+               handler: BoxedHandler)
                -> CommandHandler {
         CommandHandler {
             command: command.clone(),

@@ -91,11 +91,12 @@ fn main() {
                         debug!("Command: {:?}", cmd);
 
                         // Build a CommandHandler
-                        let handler = match &*cmd.name {
-                            "help" => commands::CommandHandler::new(&cmd, Box::new(commands::handle_help)),
-                            "groups" => commands::CommandHandler::new(&cmd, Box::new(commands::handle_groups)),
-                            _ => commands::CommandHandler::new(&cmd, Box::new(commands::handle_debug)),
+                        let handler_func: commands::BoxedHandler = match &*cmd.name {
+                            "help"   => Box::new(commands::handle_help),
+                            "groups" => Box::new(commands::handle_groups),
+                            _        => Box::new(commands::handle_debug),
                         };
+                        let handler = CommandHandler::new(&cmd, handler_func);
 
                         // Run the handler in a separate thread
                         let api_clone = api.clone();
