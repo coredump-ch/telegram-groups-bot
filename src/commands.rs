@@ -38,3 +38,8 @@ pub fn handle_help(command: &Command) -> Option<String> {
          /groups - list all available groups, along with the invite link"
          .into())
 }
+
+pub fn handle_groups(command: &Command) -> Option<String> {
+    info!("Handled /groups: {}", command);
+    Some("Not yet implemented.".into())
+}
