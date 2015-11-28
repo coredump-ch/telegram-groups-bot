@@ -92,9 +92,9 @@ fn main() {
 
                         // Build a CommandHandler
                         let handler = match &*cmd.name {
-                            "help" => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_help)),
-                            "groups" => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_groups)),
-                            _ => commands::CommandHandler::new(cmd.clone(), Box::new(commands::handle_debug)),
+                            "help" => commands::CommandHandler::new(&cmd, Box::new(commands::handle_help)),
+                            "groups" => commands::CommandHandler::new(&cmd, Box::new(commands::handle_groups)),
+                            _ => commands::CommandHandler::new(&cmd, Box::new(commands::handle_debug)),
                         };
 
                         // Run the handler in a separate thread

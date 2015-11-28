@@ -11,11 +11,11 @@ pub struct CommandHandler {
 
 impl CommandHandler {
 
-    pub fn new(command: Command,
+    pub fn new(command: &Command,
                handler: Box<Fn(&Command) -> Option<String> + Send + Sync>)
                -> CommandHandler {
         CommandHandler {
-            command: command,
+            command: command.clone(),
             handler: handler,
         }
     }
