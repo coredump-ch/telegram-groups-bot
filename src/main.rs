@@ -7,8 +7,7 @@
 //! ## Command API
 //!
 //! - `/help` Show help
-//! - `/groups` Show list of available topic groups
-//! - `/join <topic>` Show the invite link for that group
+//! - `/groups` Show list of available topic groups, along with the invite link
 //!
 //! ## Implementation Details
 //!
@@ -21,6 +20,9 @@
 //! All `CommandHandler`s run in a thread pool, so that they don't block the entire bot.
 //!
 //! [0]: https://crates.io/crates/telegram-bot
+
+#![feature(core)]
+#![feature(unboxed_closures)]
 
 extern crate telegram_bot;
 extern crate threadpool;
@@ -43,8 +45,7 @@ use commands::CommandHandler;
 
 
 /// Initialize and return a `telegram_bot::Listener` instance.
-fn get_listener() -> Listener {
-    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
+fn get_listener(api: &Api) -> Listener {
     match api.get_me() {
         Ok(user) => println!("Starting {}...", user.first_name),
         Err(e) => {
@@ -65,7 +66,8 @@ fn main() {
     env_logger::init().unwrap();
 
     // Get Telegram Api listener
-    let mut listener = get_listener();
+    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
+    let mut listener = get_listener(&api);
 
     // Create thread pool for command handlers
     let pool = ThreadPool::new(12);
@@ -76,6 +78,9 @@ fn main() {
         // Dispatch messages
         if let Some(m) = u.message {
 
+            // Get chat id
+            let chat_id = m.chat.id();
+
             // Process text messages
             if let MessageType::Text(text) = m.msg {
 
@@ -84,9 +89,22 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
-                        let handler = commands::LogHandler { command: cmd.clone() };
+
+                        // Build a CommandHandler
+                        let handler_func: commands::BoxedHandler = match &*cmd.name {
+                            "help"   => Box::new(commands::handle_help),
+                            "groups" => Box::new(commands::handle_groups),
+                            _        => Box::new(commands::handle_debug),
+                        };
+                        let handler = CommandHandler::new(&cmd, handler_func);
+
+                        // Run the handler in a separate thread
+                        let api_clone = api.clone();
                         pool.execute(move || {
-                            handler.handle();
+                            if let Some(msg) = handler.handle() {
+                                debug!("Msg was: {}", msg);
+                                api_clone.send_message(chat_id, msg, None, None, None);
+                            };
                         });
                     }
                     Err(_) => debug!("No command."),
