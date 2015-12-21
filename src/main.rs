@@ -77,6 +77,9 @@ fn main() {
         // Dispatch messages
         if let Some(m) = u.message {
 
+            // Get chat id
+            let chat_id = m.chat.id();
+
             // Process text messages
             if let MessageType::Text(text) = m.msg {
 
@@ -85,9 +88,14 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
+
+                        // Run the handler in a separate thread
+                        let api_clone = api.clone();
                         pool.execute(move || {
-                            let msg = commands::handle_log(&cmd);
-                            info!("Return msg is {:?}", msg);
+                            if let Some(msg) = commands::handle_log(&cmd) {
+                                debug!("Return msg: {}", msg);
+                                api_clone.send_message(chat_id, msg, None, None, None);
+                            };
                         });
                     }
                     Err(_) => debug!("No command."),
