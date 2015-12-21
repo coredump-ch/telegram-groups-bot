@@ -16,9 +16,7 @@
 //! LongPoll.
 //!
 //! When a message comes in, it is first parsed into a `Command`. If that worked out, the command
-//! is dispatched to a `CommandHandler`.
-//!
-//! All `CommandHandler`s run in a thread pool, so that they don't block the entire bot.
+//! is processed by a command handler in a thread pool.
 //!
 //! [0]: https://crates.io/crates/telegram-bot
 
@@ -39,7 +37,6 @@ use threadpool::ThreadPool;
 use conv::TryFrom;
 
 use types::Command;
-use commands::CommandHandler;
 
 
 /// Initialize and return a `telegram_bot::Listener` instance.
@@ -88,9 +85,9 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
-                        let handler = commands::LogHandler { command: cmd.clone() };
                         pool.execute(move || {
-                            handler.handle();
+                            let msg = commands::handle_log(&cmd);
+                            info!("Return msg is {:?}", msg);
                         });
                     }
                     Err(_) => debug!("No command."),
