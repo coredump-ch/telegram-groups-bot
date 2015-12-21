@@ -44,7 +44,12 @@ use commands::CommandHandler;
 
 /// Initialize and return a `telegram_bot::Listener` instance.
 fn get_listener() -> Listener {
-    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap();
+
+    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap_or_else(|_| {
+        println!("Error: TELEGRAM_BOT_TOKEN env var missing");
+        exit(1);
+    });
+
     match api.get_me() {
         Ok(user) => println!("Starting {}...", user.first_name),
         Err(e) => {
@@ -54,6 +59,7 @@ fn get_listener() -> Listener {
             exit(1);
         },
     }
+
     api.listener(ListeningMethod::LongPoll(None))
 
 }
