@@ -12,8 +12,7 @@ Docs: https://coredump-ch.github.io/rust-docs/telegram-groups-bot/telegram_group
 The bot provides the following commands:
 
 - `/help` Show help
-- `/groups` Show list of available groups
-- `/join <topic>` Show the invite link for that group
+- `/groups` Show list of available groups, along with the invite link
 
 
 ## Development

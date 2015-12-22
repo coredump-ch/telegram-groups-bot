@@ -7,8 +7,7 @@
 //! ## Command API
 //!
 //! - `/help` Show help
-//! - `/groups` Show list of available topic groups
-//! - `/join <topic>` Show the invite link for that group
+//! - `/groups` Show list of available topic groups, along with the invite link
 //!
 //! ## Implementation Details
 //!
