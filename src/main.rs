@@ -89,10 +89,16 @@ fn main() {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
 
+                        // Choose handler
+                        let handler: Box<Fn(&Command) -> Option<String> + Send> = match &*cmd.name {
+                            "help" => Box::new(commands::handle_help),
+                            _ => Box::new(commands::handle_log),
+                        };
+
                         // Run the handler in a separate thread
                         let api_clone = api.clone();
                         pool.execute(move || {
-                            if let Some(msg) = commands::handle_log(&cmd) {
+                            if let Some(msg) = handler(&cmd) {
                                 debug!("Return msg: {}", msg);
                                 api_clone.send_message(chat_id, msg, None, None, None);
                             };
