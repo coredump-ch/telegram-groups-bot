@@ -92,6 +92,7 @@ fn main() {
                         // Choose handler
                         let handler: Box<Fn(&Command) -> Option<String> + Send> = match &*cmd.name {
                             "help" => Box::new(commands::handle_help),
+                            "groups" => Box::new(commands::handle_groups),
                             _ => Box::new(commands::handle_log),
                         };
 

@@ -17,3 +17,9 @@ pub fn handle_help(command: &Command) -> Option<String> {
           .into())
 
 }
+
+
+pub fn handle_groups(command: &Command) -> Option<String> {
+    info!("Handled /groups: {}", command);
+    Some("Not yet implemented.".into())
+}
