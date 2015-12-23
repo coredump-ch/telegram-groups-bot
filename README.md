@@ -13,6 +13,7 @@ The bot provides the following commands:
 
 - `/help` Show help
 - `/groups` Show list of available groups, along with the invite link
+- `/add <name> <invite-link>` Register a new topic group
 
 
 ## Development

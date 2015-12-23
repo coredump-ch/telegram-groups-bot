@@ -15,7 +15,8 @@ pub fn handle_help(command: &Command) -> Option<String> {
     info!("Handled /help: {}", command);
     Some("Available commands:\n\n \
           /help - show this help\n \
-          /groups - list all available groups, along with the invite link"
+          /groups - list all available groups, along with the invite link\n \
+          /add <name> <invite-link> - Register a new topic group"
           .into())
 
 }
@@ -24,5 +25,12 @@ pub fn handle_help(command: &Command) -> Option<String> {
 /// Return list of groups.
 pub fn handle_groups(command: &Command) -> Option<String> {
     info!("Handled /groups: {}", command);
+    Some("Not yet implemented.".into())
+}
+
+
+/// Add a new topic group.
+pub fn handle_add(command: &Command) -> Option<String> {
+    info!("Handled /add: {}", command);
     Some("Not yet implemented.".into())
 }

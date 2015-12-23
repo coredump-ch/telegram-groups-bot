@@ -8,6 +8,7 @@
 //!
 //! - `/help` Show help
 //! - `/groups` Show list of available topic groups, along with the invite link
+//! - `/add <name> <invite-link>` Register a new topic group
 //!
 //! ## Implementation Details
 //!
@@ -92,6 +93,7 @@ fn main() {
                         let handler: Box<Fn(&Command) -> Option<String> + Send> = match &*cmd.name {
                             "help" => Box::new(commands::handle_help),
                             "groups" => Box::new(commands::handle_groups),
+                            "add" => Box::new(commands::handle_add),
                             _ => Box::new(commands::handle_log),
                         };
 
