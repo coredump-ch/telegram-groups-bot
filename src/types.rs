@@ -45,8 +45,8 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
         // Parse out name and params
         if let Some(command) = words.next() {
 
-            // Strip leading slash
-            let name: String = command[1..].into();
+            // Strip leading slash and bot name following the @ symbol
+            let name: String = try!(command[1..].split('@').next().ok_or(CommandParseError::NoCommand)).into();
 
             // If name is an empty string, it's not valid
             if name.len() == 0 {
@@ -84,14 +84,18 @@ mod tests {
     fn command_parse_str_ok() {
         let text_simple: String = "/help".into();
         let text_params = "/list all";
+        let text_directed = "/list@TestBot all";
 
         let command_simple = Command::try_from(&*text_simple).unwrap();
         let command_params = Command::try_from(text_params).unwrap();
+        let command_directed = Command::try_from(text_directed).unwrap();
 
         assert_eq!(command_simple.name, "help");
         assert_eq!(command_simple.params, Vec::<String>::new());
         assert_eq!(command_params.name, "list");
         assert_eq!(command_params.params, vec!["all"]);
+        assert_eq!(command_directed.name, "list");
+        assert_eq!(command_directed.params, vec!["all"]);
     }
 
     #[test]
@@ -102,6 +106,7 @@ mod tests {
             "no initial slash",
             " /preceding space",
             "/ params but no name",
+            "/@BotName but no command name",
         ];
 
         for &text in texts.iter() {
