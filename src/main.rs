@@ -32,7 +32,7 @@ pub mod commands;
 
 use std::process::exit;
 
-use telegram_bot::{Api, Listener, ListeningMethod, MessageType, ListeningAction};
+use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ListeningAction};
 use threadpool::ThreadPool;
 use conv::TryFrom;
 
@@ -80,6 +80,10 @@ fn main() {
             // Get chat id
             let chat_id = m.chat.id();
 
+            // Get copy of API and message
+            let api_clone = api.clone();
+            let msg_clone = m.clone();
+
             // Process text messages
             if let MessageType::Text(text) = m.msg {
 
@@ -90,7 +94,7 @@ fn main() {
                         debug!("Command: {:?}", cmd);
 
                         // Choose handler
-                        let handler: Box<Fn(&Command) -> Option<String> + Send> = match &*cmd.name {
+                        let handler: Box<Fn(&Command, &Message) -> Option<String> + Send> = match &*cmd.name {
                             "help" => Box::new(commands::handle_help),
                             "groups" => Box::new(commands::handle_groups),
                             "add" => Box::new(commands::handle_add),
@@ -98,11 +102,10 @@ fn main() {
                         };
 
                         // Run the handler in a separate thread
-                        let api_clone = api.clone();
                         pool.execute(move || {
-                            if let Some(msg) = handler(&cmd) {
-                                debug!("Return msg: {}", msg);
-                                api_clone.send_message(chat_id, msg, None, None, None);
+                            if let Some(reply) = handler(&cmd, &msg_clone) {
+                                debug!("Return msg: {}", reply);
+                                api_clone.send_message(chat_id, reply, None, None, None);
                             };
                         });
                     }

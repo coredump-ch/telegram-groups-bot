@@ -1,17 +1,19 @@
 //! Implementations of the command handlers.
 
+use telegram_bot::Message;
+
 use types::Command;
 
 
 /// Log the command, don't do anything else.
-pub fn handle_log(command: &Command) -> Option<String> {
+pub fn handle_log(command: &Command, message: &Message) -> Option<String> {
     info!("Handled command: {}", &command);
     None
 }
 
 
 /// Return help output.
-pub fn handle_help(command: &Command) -> Option<String> {
+pub fn handle_help(command: &Command, message: &Message) -> Option<String> {
     info!("Handled /help: {}", command);
     Some("Available commands:\n\n \
           /help - show this help\n \
@@ -23,14 +25,14 @@ pub fn handle_help(command: &Command) -> Option<String> {
 
 
 /// Return list of groups.
-pub fn handle_groups(command: &Command) -> Option<String> {
+pub fn handle_groups(command: &Command, message: &Message) -> Option<String> {
     info!("Handled /groups: {}", command);
     Some("Not yet implemented.".into())
 }
 
 
 /// Add a new topic group.
-pub fn handle_add(command: &Command) -> Option<String> {
+pub fn handle_add(command: &Command, message: &Message) -> Option<String> {
     info!("Handled /add: {}", command);
     Some("Not yet implemented.".into())
 }
