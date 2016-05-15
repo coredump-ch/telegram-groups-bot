@@ -23,20 +23,28 @@
 extern crate telegram_bot;
 extern crate threadpool;
 extern crate conv;
+extern crate r2d2;
+extern crate r2d2_redis;
+extern crate redis;
+extern crate url;
 #[macro_use] extern crate log;
 extern crate env_logger;
 
 pub mod types;
 pub mod errors;
 pub mod commands;
+pub mod datastore;
 
+use std::default::Default;
 use std::process::exit;
 
 use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ParseMode, ListeningAction};
 use threadpool::ThreadPool;
 use conv::TryFrom;
+use r2d2_redis::RedisConnectionManager;
 
 use types::Command;
+use datastore::RedisPool;
 
 
 /// Initialize and return a `telegram_bot::Listener` instance.
@@ -52,7 +60,14 @@ fn get_listener(api: &Api) -> Listener {
     }
 
     api.listener(ListeningMethod::LongPoll(None))
+}
 
+
+/// Get a Redis database connection pool
+fn get_redis_pool() -> RedisPool {
+    let config = Default::default();
+    let manager = RedisConnectionManager::new("redis://localhost").unwrap();
+    r2d2::Pool::new(config, manager).unwrap()
 }
 
 
@@ -68,6 +83,9 @@ fn main() {
     });
     let mut listener = get_listener(&api);
 
+    // Get connection pool
+    let redispool = get_redis_pool();
+
     // Get own username
     let username = match api.get_me() {
         Ok(user) => user.username,
@@ -80,7 +98,7 @@ fn main() {
     };
 
     // Create thread pool for command handlers
-    let pool = ThreadPool::new(12);
+    let threadpool = ThreadPool::new(12);
 
     // Fetch new updates via long poll method
     listener.listen(|u| {
@@ -108,7 +126,9 @@ fn main() {
                         debug!("Command: {:?}", cmd);
 
                         // Choose handler
-                        let handler: Box<Fn(&Command, &Message) -> Option<String> + Send> = match &*cmd.name {
+                        type Handler = Box<Fn(&Command, &Message, Option<RedisPool>)
+                                              -> Option<String> + Send>;
+                        let handler: Handler = match &*cmd.name {
                             "help" => Box::new(commands::handle_help),
                             "groups" => Box::new(commands::handle_groups),
                             "add" => Box::new(commands::handle_add),
@@ -116,8 +136,10 @@ fn main() {
                         };
 
                         // Run the handler in a separate thread
-                        pool.execute(move || {
-                            if let Some(reply) = handler(&cmd, &msg_clone) {
+                        let redispool_clone = redispool.clone();
+                        threadpool.execute(move || {
+                            if let Some(reply) = handler(&cmd, &msg_clone,
+                                                         Some(redispool_clone)) {
                                 debug!("Return msg: {}", reply);
                                 let parse_mode = Some(ParseMode::Markdown);
                                 let disable_web_page_preview = Some(true);

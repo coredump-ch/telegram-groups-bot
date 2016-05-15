@@ -3,17 +3,20 @@
 use telegram_bot::Message;
 
 use types::Command;
+use datastore::RedisPool;
 
 
 /// Log the command, don't do anything else.
-pub fn handle_log(command: &Command, message: &Message) -> Option<String> {
+pub fn handle_log(command: &Command, _: &Message, _: Option<RedisPool>)
+                  -> Option<String> {
     info!("Handled command: {}", &command);
     None
 }
 
 
 /// Return help output.
-pub fn handle_help(command: &Command, message: &Message) -> Option<String> {
+pub fn handle_help(command: &Command, _: &Message, _: Option<RedisPool>)
+                   -> Option<String> {
     info!("Handled /help: {}", command);
     Some("Available commands:\n\n \
           /help - show this help\n \
@@ -25,14 +28,16 @@ pub fn handle_help(command: &Command, message: &Message) -> Option<String> {
 
 
 /// Return list of groups.
-pub fn handle_groups(command: &Command, message: &Message) -> Option<String> {
+pub fn handle_groups(command: &Command, _: &Message, _: Option<RedisPool>)
+                     -> Option<String> {
     info!("Handled /groups: {}", command);
     Some("Not yet implemented.".into())
 }
 
 
 /// Add a new topic group.
-pub fn handle_add(command: &Command, message: &Message) -> Option<String> {
+pub fn handle_add(command: &Command, _: &Message, _: Option<RedisPool>)
+                  -> Option<String> {
     info!("Handled /add: {}", command);
     Some("Not yet implemented.".into())
 }
