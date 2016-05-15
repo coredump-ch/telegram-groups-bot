@@ -6,8 +6,8 @@ authors = [
 ]
 
 [dependencies]
-telegram-bot = "^0.3"
+telegram-bot = "^0.4.2"
 log = "^0.3"
 env_logger = "^0.3"
 conv = "^0.3"
-threadpool = "^0.1.4"
+threadpool = "^1.2"
