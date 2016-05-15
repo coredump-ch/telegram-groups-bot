@@ -4,6 +4,8 @@
 
 This bot can be used to manage multiple Telegram topic group chats.
 
+Note that you need a Redis instance on your server.
+
 Docs: https://coredump-ch.github.io/rust-docs/telegram-groups-bot/telegram_groups_bot/
 
 

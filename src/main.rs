@@ -8,7 +8,7 @@
 //!
 //! - `/help` Show help
 //! - `/groups` Show list of available topic groups, along with the invite link
-//! - `/add <name> <invite-link>` Register a new topic group
+//! - `/add <name> <invite-url>` Register a new topic group
 //!
 //! ## Implementation Details
 //!
@@ -29,14 +29,15 @@ extern crate redis;
 extern crate url;
 #[macro_use] extern crate log;
 extern crate env_logger;
+#[macro_use] extern crate quick_error;
 
 pub mod types;
 pub mod errors;
 pub mod commands;
 pub mod datastore;
 
-use std::default::Default;
 use std::process::exit;
+use std::time::Duration;
 
 use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ParseMode, ListeningAction};
 use threadpool::ThreadPool;
@@ -53,7 +54,7 @@ fn get_listener(api: &Api) -> Listener {
         Ok(user) => println!("Starting {}...", user.first_name),
         Err(e) => {
             println!("Error: Could not fetch information about Telegram bot.");
-            println!("  Error Details: {:?}", e);
+            println!("  Error details: {:?}", e);
             println!("  Maybe check your TELEGRAM_BOT_TOKEN env var?");
             exit(1);
         },
@@ -65,9 +66,21 @@ fn get_listener(api: &Api) -> Listener {
 
 /// Get a Redis database connection pool
 fn get_redis_pool() -> RedisPool {
-    let config = Default::default();
+    let config = r2d2::Config::builder()
+        .pool_size(4)
+        .initialization_fail_fast(true)
+        .connection_timeout(Duration::from_secs(5))
+        .build();
     let manager = RedisConnectionManager::new("redis://localhost").unwrap();
-    r2d2::Pool::new(config, manager).unwrap()
+    match r2d2::Pool::new(config, manager) {
+        Ok(pool) => pool,
+        Err(e) => {
+            println!("Error: Could not initialize Redis connection pool.");
+            println!("  Error details: {:?}", e);
+            println!("  Is the Redis server running?");
+            exit(1);
+        },
+    }
 }
 
 
@@ -91,7 +104,7 @@ fn main() {
         Ok(user) => user.username,
         Err(e) => {
             println!("Error: Could not fetch information about Telegram bot.");
-            println!("  Error Details: {:?}", e);
+            println!("  Error details: {:?}", e);
             println!("  Maybe check your TELEGRAM_BOT_TOKEN env var?");
             exit(1);
         },
@@ -99,6 +112,8 @@ fn main() {
 
     // Create thread pool for command handlers
     let threadpool = ThreadPool::new(12);
+
+    println!("Up and running!");
 
     // Fetch new updates via long poll method
     listener.listen(|u| {
