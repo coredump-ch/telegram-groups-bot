@@ -23,6 +23,7 @@
 extern crate telegram_bot;
 extern crate threadpool;
 extern crate conv;
+extern crate itertools;
 extern crate r2d2;
 extern crate r2d2_redis;
 extern crate redis;
@@ -35,6 +36,7 @@ pub mod types;
 pub mod errors;
 pub mod commands;
 pub mod datastore;
+pub mod utils;
 
 use std::process::exit;
 use std::time::Duration;
@@ -164,6 +166,9 @@ fn main() {
                                                                     None, None);
                                 if let Err(e) = result {
                                     error!("Could not send message: {:?}", e);
+                                    let _ = api_clone.send_message(chat_id,
+                                                                   "Internal error.".into(),
+                                                                   None, None, None, None);
                                 }
                             };
                         });

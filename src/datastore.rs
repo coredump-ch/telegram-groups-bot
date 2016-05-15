@@ -1,4 +1,6 @@
 //! Data storage backend.
+use std::collections::HashMap;
+
 use url::Url;
 use redis::{Commands, RedisError};
 use r2d2::{Pool, GetTimeout};
@@ -48,4 +50,18 @@ pub fn save_group(group_id: i64, topic: &str, url: &Url, pool: RedisPool)
     try!(conn.hset(get_hash_key(group_id), topic, url.as_str()));
 
     Ok(())
+}
+
+
+/// Return list of all groups within that namespace from Redis.
+pub fn get_groups(group_id: i64, pool: RedisPool)
+                  -> Result<Vec<(String, String)>, DatastoreError> {
+    // Connect to Redis
+    let conn = try!(pool.get());
+
+    // Get values
+    let values: HashMap<String, String> = try!(conn.hgetall(get_hash_key(group_id)));
+
+    // Convert hash map to vector of owned string tuples
+    Ok(values.iter().map(|(ref k, ref v)| (k.to_string(), v.to_string())).collect())
 }
