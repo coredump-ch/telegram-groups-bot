@@ -68,6 +68,17 @@ fn main() {
     });
     let mut listener = get_listener(&api);
 
+    // Get own username
+    let username = match api.get_me() {
+        Ok(user) => user.username,
+        Err(e) => {
+            println!("Error: Could not fetch information about Telegram bot.");
+            println!("  Error Details: {:?}", e);
+            println!("  Maybe check your TELEGRAM_BOT_TOKEN env var?");
+            exit(1);
+        },
+    };
+
     // Create thread pool for command handlers
     let pool = ThreadPool::new(12);
 
@@ -90,6 +101,9 @@ fn main() {
                 // Dispatch command handlers
                 let command = Command::try_from(&*text);
                 match command {
+                    Ok(ref cmd) if cmd.receiver.is_some() && cmd.receiver != username => {
+                        debug!("Ignored command, not directed at me: {:?}", cmd);
+                    },
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
 

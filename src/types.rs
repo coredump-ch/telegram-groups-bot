@@ -1,6 +1,7 @@
 //! Types used in this bot implementation.
 
 use std::fmt;
+use std::string::ToString;
 
 use errors::CommandParseError;
 
@@ -25,6 +26,8 @@ use errors::CommandParseError;
 pub struct Command {
     /// Command name, without a leading slash character.
     pub name: String,
+    /// Command receiver when text contains @ notation (e.g. `/help@BotName`).
+    pub receiver: Option<String>,
     /// List of command parameters. May be empty.
     pub params: Vec<String>,
 }
@@ -46,7 +49,9 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
         if let Some(command) = words.next() {
 
             // Strip leading slash and bot name following the @ symbol
-            let name: String = try!(command[1..].split('@').next().ok_or(CommandParseError::NoCommand)).into();
+            let mut parts = command[1..].split('@');
+            let name: String = try!(parts.next().ok_or(CommandParseError::NoCommand)).into();
+            let receiver: Option<String> = parts.next().map(ToString::to_string);
 
             // If name is an empty string, it's not valid
             if name.len() == 0 {
@@ -59,6 +64,7 @@ impl<'a> ::conv::TryFrom<&'a str> for Command {
             // Return command
             Ok(Command {
                 name: name.into(),
+                receiver: receiver,
                 params: params,
             })
 
@@ -92,10 +98,13 @@ mod tests {
 
         assert_eq!(command_simple.name, "help");
         assert_eq!(command_simple.params, Vec::<String>::new());
+        assert_eq!(command_simple.receiver, None);
         assert_eq!(command_params.name, "list");
         assert_eq!(command_params.params, vec!["all"]);
+        assert_eq!(command_params.receiver, None);
         assert_eq!(command_directed.name, "list");
         assert_eq!(command_directed.params, vec!["all"]);
+        assert_eq!(command_directed.receiver, Some("TestBot".into()));
     }
 
     #[test]
