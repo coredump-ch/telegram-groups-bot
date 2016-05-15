@@ -1,14 +1,13 @@
 //! # Telegram Groups Bot
 //!
 //! This bot can be used to manage multiple Telegram topic group chats.
-//! Admins can register topic channels, which the users can then list.
-//! The users can also request the invite link for one of the topic channels.
+//! Admins can register topic channels, which the users can then list and join.
 //!
 //! ## Command API
 //!
 //! - `/help` Show help
-//! - `/groups` Show list of available topic groups, along with the invite link
-//! - `/add <name> <invite-url>` Register a new topic group
+//! - `/list` Show list of available topic groups
+//! - `/add <name> <url>` Register a new topic group
 //!
 //! ## Implementation Details
 //!
@@ -147,7 +146,7 @@ fn main() {
                                               -> Option<String> + Send>;
                         let handler: Handler = match &*cmd.name {
                             "help" => Box::new(commands::handle_help),
-                            "groups" => Box::new(commands::handle_groups),
+                            "list" => Box::new(commands::handle_list),
                             "add" => Box::new(commands::handle_add),
                             _ => Box::new(commands::handle_log),
                         };

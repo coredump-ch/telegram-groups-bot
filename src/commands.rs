@@ -21,19 +21,19 @@ pub fn handle_log(command: &Command, _: &Message, _: Option<RedisPool>)
 pub fn handle_help(command: &Command, _: &Message, _: Option<RedisPool>)
                    -> Option<String> {
     info!("Handled /help: {}", command);
-    Some("Available commands:\n\n \
-          /help - show this help\n \
-          /groups - list all available groups, along with the invite link\n \
-          /add <name> <invite-url> - Register a new topic group"
+    Some("Available commands:\n\
+          /help - Show this help\n\
+          /list - Show all available groups\n\
+          /add <name> <url> - Register a new topic group"
           .into())
 
 }
 
 
 /// Return list of groups.
-pub fn handle_groups(command: &Command, message: &Message, pool: Option<RedisPool>)
+pub fn handle_list(command: &Command, message: &Message, pool: Option<RedisPool>)
                      -> Option<String> {
-    info!("Handled /groups: {}", command);
+    info!("Handled /list: {}", command);
 
     // Get main group id
     let main = match message.chat {
@@ -70,7 +70,7 @@ pub fn handle_add(command: &Command, message: &Message, pool: Option<RedisPool>)
                   -> Option<String> {
     info!("Handled /add: {}", command);
 
-    let usage = "Usage: /add <name> <invite-url>\n\
+    let usage = "Usage: /add <name> <url>\n\
                  Example: /add Bot Development https://telegram.me/...";
 
     // Rough validation
