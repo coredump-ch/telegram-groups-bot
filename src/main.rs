@@ -158,9 +158,13 @@ fn main() {
                                 debug!("Return msg: {}", reply);
                                 let parse_mode = Some(ParseMode::Markdown);
                                 let disable_web_page_preview = Some(true);
-                                api_clone.send_message(chat_id, reply,
-                                                       parse_mode, disable_web_page_preview,
-                                                       None, None);
+                                let result = api_clone.send_message(chat_id, reply,
+                                                                    parse_mode,
+                                                                    disable_web_page_preview,
+                                                                    None, None);
+                                if let Err(e) = result {
+                                    error!("Could not send message: {:?}", e);
+                                }
                             };
                         });
                     }
