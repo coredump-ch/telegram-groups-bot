@@ -32,7 +32,7 @@ pub mod commands;
 
 use std::process::exit;
 
-use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ListeningAction};
+use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ParseMode, ListeningAction};
 use threadpool::ThreadPool;
 use conv::TryFrom;
 
@@ -105,7 +105,11 @@ fn main() {
                         pool.execute(move || {
                             if let Some(reply) = handler(&cmd, &msg_clone) {
                                 debug!("Return msg: {}", reply);
-                                api_clone.send_message(chat_id, reply, None, None, None);
+                                let parse_mode = Some(ParseMode::Markdown);
+                                let disable_web_page_preview = Some(true);
+                                api_clone.send_message(chat_id, reply,
+                                                       parse_mode, disable_web_page_preview,
+                                                       None, None);
                             };
                         });
                     }
