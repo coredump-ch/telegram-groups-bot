@@ -5,9 +5,27 @@ use std::fmt;
 use errors::CommandParseError;
 
 
+/// A stateless command.
+///
+/// A command consists of a name and a list of parameters.
+///
+/// # Example
+///
+/// The string
+///
+///     /join channel1 channel2
+///
+/// ...will become...
+///
+///     Command {
+///         name: "join",
+///         params: ["channel1", "channel2"]
+///     }
 #[derive(Debug, Clone)]
 pub struct Command {
+    /// Command name, without a leading slash character.
     pub name: String,
+    /// List of command parameters. May be empty.
     pub params: Vec<String>,
 }
 

@@ -7,8 +7,8 @@
 //! ## Command API
 //!
 //! - `/help` Show help
-//! - `/groups` Show list of available topic groups
-//! - `/join <topic>` Show the invite link for that group
+//! - `/groups` Show list of available topic groups, along with the invite link
+//! - `/add <name> <invite-link>` Register a new topic group
 //!
 //! ## Implementation Details
 //!
@@ -16,9 +16,7 @@
 //! LongPoll.
 //!
 //! When a message comes in, it is first parsed into a `Command`. If that worked out, the command
-//! is dispatched to a `CommandHandler`.
-//!
-//! All `CommandHandler`s run in a thread pool, so that they don't block the entire bot.
+//! is processed by a command handler in a thread pool.
 //!
 //! [0]: https://crates.io/crates/telegram-bot
 
@@ -34,22 +32,15 @@ pub mod commands;
 
 use std::process::exit;
 
-use telegram_bot::{Api, Listener, ListeningMethod, MessageType, ListeningAction};
+use telegram_bot::{Api, Listener, ListeningMethod, Message, MessageType, ListeningAction};
 use threadpool::ThreadPool;
 use conv::TryFrom;
 
 use types::Command;
-use commands::CommandHandler;
 
 
 /// Initialize and return a `telegram_bot::Listener` instance.
-fn get_listener() -> Listener {
-
-    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap_or_else(|_| {
-        println!("Error: TELEGRAM_BOT_TOKEN env var missing");
-        exit(1);
-    });
-
+fn get_listener(api: &Api) -> Listener {
     match api.get_me() {
         Ok(user) => println!("Starting {}...", user.first_name),
         Err(e) => {
@@ -71,7 +62,11 @@ fn main() {
     env_logger::init().unwrap();
 
     // Get Telegram Api listener
-    let mut listener = get_listener();
+    let api = Api::from_env("TELEGRAM_BOT_TOKEN").unwrap_or_else(|_| {
+        println!("Error: TELEGRAM_BOT_TOKEN env var missing");
+        exit(1);
+    });
+    let mut listener = get_listener(&api);
 
     // Create thread pool for command handlers
     let pool = ThreadPool::new(12);
@@ -82,6 +77,13 @@ fn main() {
         // Dispatch messages
         if let Some(m) = u.message {
 
+            // Get chat id
+            let chat_id = m.chat.id();
+
+            // Get copy of API and message
+            let api_clone = api.clone();
+            let msg_clone = m.clone();
+
             // Process text messages
             if let MessageType::Text(text) = m.msg {
 
@@ -90,9 +92,21 @@ fn main() {
                 match command {
                     Ok(cmd) => {
                         debug!("Command: {:?}", cmd);
-                        let handler = commands::LogHandler { command: cmd.clone() };
+
+                        // Choose handler
+                        let handler: Box<Fn(&Command, &Message) -> Option<String> + Send> = match &*cmd.name {
+                            "help" => Box::new(commands::handle_help),
+                            "groups" => Box::new(commands::handle_groups),
+                            "add" => Box::new(commands::handle_add),
+                            _ => Box::new(commands::handle_log),
+                        };
+
+                        // Run the handler in a separate thread
                         pool.execute(move || {
-                            handler.handle();
+                            if let Some(reply) = handler(&cmd, &msg_clone) {
+                                debug!("Return msg: {}", reply);
+                                api_clone.send_message(chat_id, reply, None, None, None);
+                            };
                         });
                     }
                     Err(_) => debug!("No command."),
