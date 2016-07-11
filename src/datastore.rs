@@ -6,7 +6,7 @@ use redis::{Commands, RedisError};
 use r2d2::{Pool, GetTimeout};
 use r2d2_redis::RedisConnectionManager;
 
-const hash_key: &'static str = "topicgroups";
+const HASH_KEY: &'static str = "topicgroups";
 
 pub type RedisPool = Pool<RedisConnectionManager>;
 
@@ -31,7 +31,7 @@ quick_error! {
 /// This is done to get some additional namespacing in case the database is
 /// shared.
 fn get_hash_key(group_id: i64) -> String {
-    format!("{}:{}", hash_key, group_id)
+    format!("{}:{}", HASH_KEY, group_id)
 }
 
 /// Save a topic group to Redis.

@@ -182,6 +182,6 @@ fn main() {
 
         // If none of the "try!" statements returned an error: It's Ok!
         Ok(ListeningAction::Continue)
-    });
+    }).unwrap();
 
 }
