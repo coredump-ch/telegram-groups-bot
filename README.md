@@ -14,7 +14,7 @@ Docs: https://coredump-ch.github.io/rust-docs/telegram-groups-bot/telegram_group
 The bot provides the following commands:
 
 - `/help` Show help
-- `/groups` Show list of available groups
+- `/list` Show list of available groups
 - `/add <name> <url>` Register a new topic group
 
 
