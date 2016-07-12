@@ -26,6 +26,12 @@ Export env variables that control the logging and specify the bot token:
     export TELEGRAM_BOT_TOKEN=<your-token>
     export TELEGRAM_BOT_OWNER=<@your-telegram-username>
 
+Other env vars:
+
+- `REDIS_HOST`
+- `REDIS_PORT`
+- `REDIS_DB`
+
 Then run the code:
 
     cargo run

@@ -37,6 +37,7 @@ pub mod commands;
 pub mod datastore;
 pub mod utils;
 
+use std::env;
 use std::process::exit;
 use std::time::Duration;
 
@@ -66,13 +67,13 @@ fn get_listener(api: &Api) -> Listener {
 
 
 /// Get a Redis database connection pool
-fn get_redis_pool() -> RedisPool {
+fn get_redis_pool(url: &str) -> RedisPool {
     let config = r2d2::Config::builder()
         .pool_size(4)
         .initialization_fail_fast(true)
         .connection_timeout(Duration::from_secs(5))
         .build();
-    let manager = RedisConnectionManager::new("redis://localhost").unwrap();
+    let manager = RedisConnectionManager::new(url).unwrap();
     match r2d2::Pool::new(config, manager) {
         Ok(pool) => pool,
         Err(e) => {
@@ -97,8 +98,17 @@ fn main() {
     });
     let mut listener = get_listener(&api);
 
+    // Redis connection info
+    let redis_host: String = env::var("REDIS_HOST")
+        .unwrap_or("127.0.0.1".to_string());
+    let redis_port: u16 = env::var("REDIS_PORT")
+        .unwrap_or("6379".to_string()).parse().unwrap_or(6379);
+    let redis_db: i64 = env::var("REDIS_DB")
+        .unwrap_or("0".to_string()).parse().unwrap_or(0);
+    let redis_url = format!("redis://{}:{}/{}", redis_host, redis_port, redis_db);
+
     // Get connection pool
-    let redispool = get_redis_pool();
+    let redispool = get_redis_pool(&redis_url);
 
     // Get own username
     let username = match api.get_me() {
