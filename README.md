@@ -2,6 +2,10 @@
 
 [![Build Status](https://img.shields.io/travis/coredump-ch/telegram-groups-bot/master.svg)](https://travis-ci.org/coredump-ch/telegram-groups-bot)
 
+**NOTE: This bot is currently unmaintained, since I'm not using it myself
+anymore. If someone would be interested in taking over the development, let
+me know in #25.**
+
 This bot can be used to manage multiple Telegram topic group chats. In other
 chat tools, topic groups are known as "channels", but we tried to avoid that
 terminology because of the Telegram Channels that are something like public
